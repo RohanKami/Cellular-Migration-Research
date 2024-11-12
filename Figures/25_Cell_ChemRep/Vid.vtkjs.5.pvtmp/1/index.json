@@ -1,0 +1,86 @@
+{
+  "vtkClass": "vtkPolyData",
+  "points": {
+      "vtkClass": "vtkPoints",
+      "name": "points",
+      "numberOfComponents": 3,
+      "dataType": "Float64Array",
+      "ref": {
+         "encode": "LittleEndian",
+         "basepath": "data",
+         "id": "Float64_67590-89e5bd1b0114e9b0d667588c1790a4f0"
+      },
+      "size": 67590
+    },
+  "verts": {
+      "vtkClass": "vtkCellArray",
+      "name": "verts",
+      "numberOfComponents": 1,
+      "dataType": "Int32Array",
+      "ref": {
+         "encode": "LittleEndian",
+         "basepath": "data",
+         "id": "Int32_10060-3f7fac0b88b2cfccbfb3d4aab93810d1"
+      },
+      "size": 10060
+    },
+  "lines": {
+      "vtkClass": "vtkCellArray",
+      "name": "lines",
+      "numberOfComponents": 1,
+      "dataType": "Int32Array",
+      "ref": {
+         "encode": "LittleEndian",
+         "basepath": "data",
+         "id": "Int32_67500-f6311a4c85acd892a62f1fc54f0c9e46"
+      },
+      "size": 67500
+    },
+  "pointData": {
+    "vtkClass": "vtkDataSetAttributes",
+    "arrays": [
+      { "data": {
+      "vtkClass": "vtkDataArray",
+      "name": "vtkOriginalPointIds",
+      "numberOfComponents": 1,
+      "dataType": "Int32Array",
+      "ref": {
+         "encode": "LittleEndian",
+         "basepath": "data",
+         "id": "Int32_22530-5b34119536aed5e5bd5fe598c41c16a1"
+      },
+      "size": 22530
+    }}
+    ],
+    "activeTCoords": -1,
+    "activeScalars": -1,
+    "activeNormals": -1,
+    "activeGlobalIds": -1,
+    "activeTensors": -1,
+    "activePedigreeIds": -1,
+    "activeVectors": -1
+  },
+  "cellData": {
+    "vtkClass": "vtkDataSetAttributes",
+    "arrays": [
+      { "data": {
+      "vtkClass": "vtkDataArray",
+      "name": "vtkOriginalCellIds",
+      "numberOfComponents": 1,
+      "dataType": "Int32Array",
+      "ref": {
+         "encode": "LittleEndian",
+         "basepath": "data",
+         "id": "Int32_27530-2b625505494eee715ffc82e5efb41462"
+      },
+      "size": 27530
+    }}
+    ],
+    "activeTCoords": -1,
+    "activeScalars": -1,
+    "activeNormals": -1,
+    "activeGlobalIds": -1,
+    "activeTensors": -1,
+    "activePedigreeIds": -1,
+    "activeVectors": -1
+  }}

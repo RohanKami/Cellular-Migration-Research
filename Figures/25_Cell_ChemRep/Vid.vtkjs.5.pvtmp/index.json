@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "background": [0.32, 0.34, 0.43],
+  "camera": {
+    "focalPoint": [14.7514, -0.342208, 0],
+    "position": [14.7514, -0.342208, 102.675],
+    "viewUp": [0, 1, 0]
+  },
+  "centerOfRotation": [14.7514, -0.342208, 0],
+  "scene": [
+    {
+      "name": "1",
+      "type": "vtkHttpDataSetReader",
+      "vtkHttpDataSetReader": { "url": "1" },
+      "actor": {
+        "origin": [0, 0, 0],
+        "scale": [1, 1, 1],
+        "position": [0, 0, 0]
+      },
+      "actorRotation": [0, 0, 0, 1],
+      "mapper": {
+        "colorByArrayName": "",
+        "colorMode": 1,
+        "scalarMode": 0
+      },
+      "property": {
+        "representation": 2,
+        "edgeVisibility": 0,
+        "diffuseColor": [1, 1, 1],
+        "pointSize": 2,
+        "opacity": 1
+      }
+    }
+  ],
+  "lookupTables": {
+  }
+}
