@@ -549,28 +549,30 @@ while t < T_Max:
         
         centroid_x[cell_number].append(c_x)
         centroid_y[cell_number].append(c_y)
-
+        #Iterate over each node of each cell
         for i in range(1, Node_Amount + 1):
+            #Iterate for each concentration signal
             for j in range(0, Amount_Concentration_Signal):
                 if t >= Concentration_Point_Coordinates[2][j] and t <= Concentration_Point_Coordinates[3][j]:
                     dcx, dcy = solve_grad_c(Cell_Membrane_Coordinates[0][cell_number][i], Concentration_Point_Coordinates[0][j], Cell_Membrane_Coordinates[1][cell_number][i], Concentration_Point_Coordinates[1][j], t - Concentration_Point_Coordinates[2][j], mu, teps, A, Concentration_Point_Coordinates[4][j])
                 else:
                     dcx, dcy = 0, 0
                 
-                # Update cell membrane coordinates
+                # Read the cell membrane node coordinates
                 m_x = Cell_Membrane_Coordinates[0][cell_number][i]
                 m_y = Cell_Membrane_Coordinates[1][cell_number][i]
                 n_x = Cell_Nucleus_Coordinates[0][cell_number][i]
                 n_y = Cell_Nucleus_Coordinates[1][cell_number][i]
                 
+                ##Read the original lcell membrane node coordinates
                 original_m_x = Original_Cell_Membrane_Coordinates[0][cell_number][i]
                 original_m_y = Original_Cell_Membrane_Coordinates[1][cell_number][i]
                 original_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i]
                 original_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i]
                 
+                #If i == 1 then we remember previous node will be node N
                 if i == 1:
                     prev_x = Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
-                    
                     prev_y = Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
                     original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
                     original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
@@ -579,7 +581,7 @@ while t < T_Max:
                     prev_y = Cell_Membrane_Coordinates[1][cell_number][i-1]
                     original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][i-1]
                     original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][i-1]
-
+                #If i == node_amount then we remember next node will be node 1.
                 if i == Node_Amount:
                     next_x = Cell_Membrane_Coordinates[0][cell_number][1]
                     next_y = Cell_Membrane_Coordinates[1][cell_number][1]
@@ -591,6 +593,7 @@ while t < T_Max:
                     original_next_x = Original_Cell_Membrane_Coordinates[0][cell_number][i+1]
                     original_next_y = Original_Cell_Membrane_Coordinates[1][cell_number][i+1]
 
+                #Explicit time step on node summing all forces.
                 Cell_Membrane_Coordinates[0][cell_number][i] += (Beta * dcx * dt +
                                                                 alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt +
                                                                 Delta * (original_m_x - original_next_x - (original_next_x - original_m_x) - (original_prev_x - original_m_x)  + (original_m_x - original_prev_x)) * dt)
@@ -600,6 +603,7 @@ while t < T_Max:
                                                                 Delta * (original_m_y - original_next_y - (original_next_y - original_m_y) - (original_prev_y - original_m_y)  + (original_m_y - original_prev_y)) * dt)
                 
                 # Update nucleus coordinates
+                 #If i == 1 then we remember previous node will be node N
                 if i == 1:
                     prev_n_x = Cell_Nucleus_Coordinates[0][cell_number][Node_Amount]
                     prev_n_y = Cell_Nucleus_Coordinates[1][cell_number][Node_Amount]
@@ -611,6 +615,7 @@ while t < T_Max:
                     original_prev_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i-1]
                     original_prev_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i-1]
 
+                #If i == node_amount then we remember next node will be node 1.
                 if i == Node_Amount:
                     next_n_x = Cell_Nucleus_Coordinates[0][cell_number][1]
                     next_n_y = Cell_Nucleus_Coordinates[1][cell_number][1]
@@ -621,13 +626,16 @@ while t < T_Max:
                     next_n_y = Cell_Nucleus_Coordinates[1][cell_number][i+1]
                     original_next_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i+1]
                     original_next_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i+1]
-
+                    
+                
+                #Get original values of difference between nodes
                 original_hat_y_x = (original_n_x - original_next_n_x)
                 original_hat_y_y = (original_n_y - original_next_n_y)
 
                 original_hat_x_x = (original_n_x - original_c_x)
                 original_hat_x_y = (original_n_y - original_c_y)
 
+                #Explicit time step
                 Cell_Nucleus_Coordinates[0][cell_number][i] += (alpha_n * (c_x - n_x + original_hat_x_x) * dt -
                                                                 alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt +
                                                                 delta_n * (original_hat_y_x - (original_next_n_x - original_n_x) - (original_prev_n_x - original_n_x) + (original_n_x - original_prev_n_x)) * dt)
@@ -635,6 +643,8 @@ while t < T_Max:
                 Cell_Nucleus_Coordinates[1][cell_number][i] += (alpha_n * (c_y - n_y + original_hat_x_y) * dt -
                                                                 alpha * (n_y - m_y - (original_n_y - original_m_y)) * dt +
                                                                 delta_n * (original_hat_y_y - (original_next_n_y - original_n_y) - (original_prev_n_y - original_n_y) + (original_n_y - original_prev_n_y)) * dt)
+                
+        #Append for plotting meancurv
         #MeanCurv = calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates, cell_number, Node_Amount)
         #Mean_Curvature[cell_number].append(MeanCurv)
     time_values.append(t)
