@@ -17,7 +17,6 @@ gmsh.initialize()
 #offset_x, offset_y -> Center point of generated cell
 #Cell_Coordinates -> array used to store coordinates of each cell
 #Radius -> Radius of cell
-
 def Create_Cell_Mesh(N, lc, offset_x, offset_y, Cell_Coordinates, cell_number, radius):
     cell_points = {}
     Theta = 0
@@ -52,7 +51,7 @@ def Connect_Mesh_Points(N, cell_points):
 #max_attempt -> ammount of attempts it does to place the point
 def generate_random_offset(used_offsets, spacing, concentration_point_coordinates, max_attempts=100):
     #Specify coordinates where you will place a cell (from -Size_Of_Grid to Size_Of_Gride (x,y))
-    Size_Of_Grid = 15
+    Size_Of_Grid = 5
     amount_concentration_signal = concentration_point_coordinates.shape[1]
     
     for _ in range(max_attempts):
@@ -322,8 +321,8 @@ def calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates
 
 # Circle points:
 lc = 1e-2
-Node_Amount = 100 #Amout of nodes in simulation
-Cell_Amount = 50 #Amount of cells in simulation
+Node_Amount = 500 #Amout of nodes in simulation
+Cell_Amount = 5 #Amount of cells in simulation
 rho_1 = 1.2 #Density of cytoplasme
 rho_2 = 1.4 #Density of Nucleus
 mu = 2 #Diffusion constant of chemical signal
@@ -370,114 +369,114 @@ centroid_y = {cell_number: [] for cell_number in range(1, Cell_Amount + 1)}
 
 
 
-Amount_Concentration_Signal = 17
+Amount_Concentration_Signal = 1
 Chemical_Signal_Points = numpy.zeros(Amount_Concentration_Signal)
 Concentration_Point_Coordinates = numpy.zeros((5, Amount_Concentration_Signal)) #x,y,time_on,time_off which concentration point, 1 = repel 0 = attract
 Concentration_Point_flags = numpy.zeros(Amount_Concentration_Signal)
 
 #List where you want concentration points and on/off time of each
-Concentration_Point_Coordinates[0][0] = 35
-Concentration_Point_Coordinates[1][0] = 15
+Concentration_Point_Coordinates[0][0] = 0
+Concentration_Point_Coordinates[1][0] = 0
 Concentration_Point_Coordinates[2][0] = 0
 Concentration_Point_Coordinates[3][0] = 40
 Concentration_Point_Coordinates[4][0] = 0
 
 
-Concentration_Point_Coordinates[0][1] = 35
-Concentration_Point_Coordinates[1][1] = 13
-Concentration_Point_Coordinates[2][1] = 0
-Concentration_Point_Coordinates[3][1] = 40
-Concentration_Point_Coordinates[4][1] = 0
+# Concentration_Point_Coordinates[0][1] = 35
+# Concentration_Point_Coordinates[1][1] = 13
+# Concentration_Point_Coordinates[2][1] = 0
+# Concentration_Point_Coordinates[3][1] = 40
+# Concentration_Point_Coordinates[4][1] = 0
 
-Concentration_Point_Coordinates[0][2] = 35
-Concentration_Point_Coordinates[1][2] = 11
-Concentration_Point_Coordinates[2][2] = 0
-Concentration_Point_Coordinates[3][2] = 40
-Concentration_Point_Coordinates[4][2] = 0
+# Concentration_Point_Coordinates[0][2] = 35
+# Concentration_Point_Coordinates[1][2] = 11
+# Concentration_Point_Coordinates[2][2] = 0
+# Concentration_Point_Coordinates[3][2] = 40
+# Concentration_Point_Coordinates[4][2] = 0
 
-Concentration_Point_Coordinates[0][3] = 35
-Concentration_Point_Coordinates[1][3] = 9
-Concentration_Point_Coordinates[2][3] = 0
-Concentration_Point_Coordinates[3][3] = 40
-Concentration_Point_Coordinates[4][3] = 0
+# Concentration_Point_Coordinates[0][3] = 35
+# Concentration_Point_Coordinates[1][3] = 9
+# Concentration_Point_Coordinates[2][3] = 0
+# Concentration_Point_Coordinates[3][3] = 40
+# Concentration_Point_Coordinates[4][3] = 0
 
-Concentration_Point_Coordinates[0][4] = 35
-Concentration_Point_Coordinates[1][4] = 7
-Concentration_Point_Coordinates[2][4] = 0
-Concentration_Point_Coordinates[3][4] = 40
-Concentration_Point_Coordinates[4][4] = 0
+# Concentration_Point_Coordinates[0][4] = 35
+# Concentration_Point_Coordinates[1][4] = 7
+# Concentration_Point_Coordinates[2][4] = 0
+# Concentration_Point_Coordinates[3][4] = 40
+# Concentration_Point_Coordinates[4][4] = 0
 
-Concentration_Point_Coordinates[0][5] = 35
-Concentration_Point_Coordinates[1][5] = 5
-Concentration_Point_Coordinates[2][5] = 0
-Concentration_Point_Coordinates[3][5] = 40
-Concentration_Point_Coordinates[4][5] = 0
+# Concentration_Point_Coordinates[0][5] = 35
+# Concentration_Point_Coordinates[1][5] = 5
+# Concentration_Point_Coordinates[2][5] = 0
+# Concentration_Point_Coordinates[3][5] = 40
+# Concentration_Point_Coordinates[4][5] = 0
 
-Concentration_Point_Coordinates[0][6] = 35
-Concentration_Point_Coordinates[1][6] = 3
-Concentration_Point_Coordinates[2][6] = 0
-Concentration_Point_Coordinates[3][6] = 40
-Concentration_Point_Coordinates[4][6] = 0
+# Concentration_Point_Coordinates[0][6] = 35
+# Concentration_Point_Coordinates[1][6] = 3
+# Concentration_Point_Coordinates[2][6] = 0
+# Concentration_Point_Coordinates[3][6] = 40
+# Concentration_Point_Coordinates[4][6] = 0
 
-Concentration_Point_Coordinates[0][7] = 35
-Concentration_Point_Coordinates[1][7] = 1
-Concentration_Point_Coordinates[2][7] = 0
-Concentration_Point_Coordinates[3][7] = 40
-Concentration_Point_Coordinates[4][7] = 0
+# Concentration_Point_Coordinates[0][7] = 35
+# Concentration_Point_Coordinates[1][7] = 1
+# Concentration_Point_Coordinates[2][7] = 0
+# Concentration_Point_Coordinates[3][7] = 40
+# Concentration_Point_Coordinates[4][7] = 0
 
-Concentration_Point_Coordinates[0][8] = 35
-Concentration_Point_Coordinates[1][8] = -1
-Concentration_Point_Coordinates[2][8] = 0
-Concentration_Point_Coordinates[3][8] = 40
-Concentration_Point_Coordinates[4][8] = 0
+# Concentration_Point_Coordinates[0][8] = 35
+# Concentration_Point_Coordinates[1][8] = -1
+# Concentration_Point_Coordinates[2][8] = 0
+# Concentration_Point_Coordinates[3][8] = 40
+# Concentration_Point_Coordinates[4][8] = 0
 
-Concentration_Point_Coordinates[0][9] = 35
-Concentration_Point_Coordinates[1][9] = -3
-Concentration_Point_Coordinates[2][9] = 0
-Concentration_Point_Coordinates[3][9] = 40
-Concentration_Point_Coordinates[4][9] = 0
+# Concentration_Point_Coordinates[0][9] = 35
+# Concentration_Point_Coordinates[1][9] = -3
+# Concentration_Point_Coordinates[2][9] = 0
+# Concentration_Point_Coordinates[3][9] = 40
+# Concentration_Point_Coordinates[4][9] = 0
 
-Concentration_Point_Coordinates[0][10] = 35
-Concentration_Point_Coordinates[1][10] = -5
-Concentration_Point_Coordinates[2][10] = 0
-Concentration_Point_Coordinates[3][10] = 40
-Concentration_Point_Coordinates[4][10] = 0
+# Concentration_Point_Coordinates[0][10] = 35
+# Concentration_Point_Coordinates[1][10] = -5
+# Concentration_Point_Coordinates[2][10] = 0
+# Concentration_Point_Coordinates[3][10] = 40
+# Concentration_Point_Coordinates[4][10] = 0
 
-Concentration_Point_Coordinates[0][11] = 35
-Concentration_Point_Coordinates[1][11] = -5
-Concentration_Point_Coordinates[2][11] = 0
-Concentration_Point_Coordinates[3][11] = 40
-Concentration_Point_Coordinates[4][11] = 0
+# Concentration_Point_Coordinates[0][11] = 35
+# Concentration_Point_Coordinates[1][11] = -5
+# Concentration_Point_Coordinates[2][11] = 0
+# Concentration_Point_Coordinates[3][11] = 40
+# Concentration_Point_Coordinates[4][11] = 0
 
-Concentration_Point_Coordinates[0][12] = 35
-Concentration_Point_Coordinates[1][12] = -7
-Concentration_Point_Coordinates[2][12] = 0
-Concentration_Point_Coordinates[3][12] = 40
-Concentration_Point_Coordinates[4][12] = 0
+# Concentration_Point_Coordinates[0][12] = 35
+# Concentration_Point_Coordinates[1][12] = -7
+# Concentration_Point_Coordinates[2][12] = 0
+# Concentration_Point_Coordinates[3][12] = 40
+# Concentration_Point_Coordinates[4][12] = 0
 
-Concentration_Point_Coordinates[0][13] = 35
-Concentration_Point_Coordinates[1][13] = -9
-Concentration_Point_Coordinates[2][13] = 0
-Concentration_Point_Coordinates[3][13] = 40
-Concentration_Point_Coordinates[4][13] = 0
+# Concentration_Point_Coordinates[0][13] = 35
+# Concentration_Point_Coordinates[1][13] = -9
+# Concentration_Point_Coordinates[2][13] = 0
+# Concentration_Point_Coordinates[3][13] = 40
+# Concentration_Point_Coordinates[4][13] = 0
 
-Concentration_Point_Coordinates[0][14] = 35
-Concentration_Point_Coordinates[1][14] = -11
-Concentration_Point_Coordinates[2][14] = 0
-Concentration_Point_Coordinates[3][14] = 40
-Concentration_Point_Coordinates[4][14] = 0
+# Concentration_Point_Coordinates[0][14] = 35
+# Concentration_Point_Coordinates[1][14] = -11
+# Concentration_Point_Coordinates[2][14] = 0
+# Concentration_Point_Coordinates[3][14] = 40
+# Concentration_Point_Coordinates[4][14] = 0
 
-Concentration_Point_Coordinates[0][15] = 35
-Concentration_Point_Coordinates[1][15] = -13
-Concentration_Point_Coordinates[2][15] = 0
-Concentration_Point_Coordinates[3][15] = 40
-Concentration_Point_Coordinates[4][15] = 0
+# Concentration_Point_Coordinates[0][15] = 35
+# Concentration_Point_Coordinates[1][15] = -13
+# Concentration_Point_Coordinates[2][15] = 0
+# Concentration_Point_Coordinates[3][15] = 40
+# Concentration_Point_Coordinates[4][15] = 0
 
-Concentration_Point_Coordinates[0][16] = 35
-Concentration_Point_Coordinates[1][16] = -15
-Concentration_Point_Coordinates[2][16] = 0
-Concentration_Point_Coordinates[3][16] = 40
-Concentration_Point_Coordinates[4][16] = 0
+# Concentration_Point_Coordinates[0][16] = 35
+# Concentration_Point_Coordinates[1][16] = -15
+# Concentration_Point_Coordinates[2][16] = 0
+# Concentration_Point_Coordinates[3][16] = 40
+# Concentration_Point_Coordinates[4][16] = 0
 
 
 # Generate mesh for each cell with a random offset
@@ -506,14 +505,12 @@ PV_TIME = 0
 #run_gmesh()
 #create_axes()
 
-Loop_1_Flag = 0
 
 #Outer loops checks current time
 while t < T_Max:
     
     #How often we export a vtk file
     if int(t/dt) % 100 == 0:
-        Loop_1_Flag = 1
         for i in range(0, Amount_Concentration_Signal):
 
             if t >= Concentration_Point_Coordinates[2][i] and t <= Concentration_Point_Coordinates[3][i] and (Concentration_Point_flags[i] == 0):
@@ -528,8 +525,8 @@ while t < T_Max:
         write_mesh_to_vtk(f"time_{int(PV_TIME)}.vtk")
         PV_TIME += 1
     
-    if Loop_1_Flag == 1:
-       calculate_lj_forces_vectorized(Cell_Membrane_Coordinates, epsilon, sigma, dt, Cell_Amount, Node_Amount)
+    
+    calculate_lj_forces_vectorized(Cell_Membrane_Coordinates, epsilon, sigma, dt, Cell_Amount, Node_Amount)
 
 
     #Iterate for each cell
@@ -552,6 +549,8 @@ while t < T_Max:
         #Iterate over each node of each cell
         for i in range(1, Node_Amount + 1):
             #Iterate for each concentration signal
+            
+            # NOTE : Rethinking this, I should just make dcx,dcy a sum of all the grac_c
             for j in range(0, Amount_Concentration_Signal):
                 if t >= Concentration_Point_Coordinates[2][j] and t <= Concentration_Point_Coordinates[3][j]:
                     dcx, dcy = solve_grad_c(Cell_Membrane_Coordinates[0][cell_number][i], Concentration_Point_Coordinates[0][j], Cell_Membrane_Coordinates[1][cell_number][i], Concentration_Point_Coordinates[1][j], t - Concentration_Point_Coordinates[2][j], mu, teps, A, Concentration_Point_Coordinates[4][j])
@@ -595,7 +594,7 @@ while t < T_Max:
 
                 #Explicit time step on node summing all forces.
                 Cell_Membrane_Coordinates[0][cell_number][i] += (Beta * dcx * dt +
-                                                                alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt +
+                                                                alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt + #
                                                                 Delta * (original_m_x - original_next_x - (original_next_x - original_m_x) - (original_prev_x - original_m_x)  + (original_m_x - original_prev_x)) * dt)
 
                 Cell_Membrane_Coordinates[1][cell_number][i] += (Beta * dcy * dt +
