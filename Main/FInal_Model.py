@@ -49,23 +49,37 @@ def Connect_Mesh_Points(N, cell_points):
 #spacing -> minimum space we want between cells
 #concentration_point_coordinates -> Coordinates of where chemo sources have been placed
 #max_attempt -> ammount of attempts it does to place the point
-def generate_random_offset(used_offsets, spacing, concentration_point_coordinates, max_attempts=100):
-    #Specify coordinates where you will place a cell (from -Size_Of_Grid to Size_Of_Gride (x,y))
-    Size_Of_Grid = 5
+import random
+import math
+
+import random
+import math
+
+def generate_random_offset(used_offsets, spacing, concentration_point_coordinates, R_Boundary, max_attempts=100):
+    # Specify circular grid boundary (radius of the circle)
+    Grid_Radius = R_Boundary  # Original radius of the grid
+    effective_radius = Grid_Radius - 1  # Ensure points are at least 1 unit from the perimeter
     amount_concentration_signal = concentration_point_coordinates.shape[1]
     
     for _ in range(max_attempts):
-        offset_x = random.uniform(-Size_Of_Grid, Size_Of_Grid)
-        offset_y = random.uniform(-Size_Of_Grid, Size_Of_Grid)
+        # Generate a random angle and distance within the effective radius
+        angle = random.uniform(0, 2 * math.pi)
+        distance = random.uniform(0, effective_radius)
+        offset_x = distance * math.cos(angle)
+        offset_y = distance * math.sin(angle)
         
         # Check against used_offsets
         if all(math.sqrt((offset_x - x)**2 + (offset_y - y)**2) >= spacing for x, y in used_offsets):
             # Check against concentration_point_coordinates
             if all(math.sqrt((offset_x - concentration_point_coordinates[0, i])**2 + 
-                             (offset_y - concentration_point_coordinates[1, i])**2) >= 1.25*spacing  #increased chemo offset by 1.25
+                             (offset_y - concentration_point_coordinates[1, i])**2) >= 1.25 * spacing  # Increased chemo offset
                    for i in range(amount_concentration_signal)):
                 used_offsets.append((offset_x, offset_y))
                 return offset_x, offset_y
+    
+    raise ValueError("Failed to generate a valid random offset within the max_attempts limit.")
+
+
 
 #Function used to solve for Mx
 #node_amount -> Amount of nodes on each cell membrane or nucleus
@@ -318,10 +332,24 @@ def calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates
         mean_curvature.append(curvature)
     
     return numpy.mean(mean_curvature)
+    
+#N -> Number of points on boundary
 
+def Create_Boundary_Mesh(N, lc, offset_x, offset_y, R_Boundary):
+    circle_points = {}
+    Theta = 0
+    dTheta = 2 * math.pi / N  # Angle step for each point on the circle
+
+    for i in range(N):
+        x = R_Boundary * math.cos(Theta) + offset_x
+        y = R_Boundary * math.sin(Theta) + offset_y
+        circle_points[str(i+1)] = gmsh.model.geo.add_point(x, y, 0, lc)
+        Theta += dTheta
+
+    return circle_points
 # Circle points:
 lc = 1e-2
-Node_Amount = 500 #Amout of nodes in simulation
+Node_Amount = 100 #Amout of nodes in simulation
 Cell_Amount = 5 #Amount of cells in simulation
 rho_1 = 1.2 #Density of cytoplasme
 rho_2 = 1.4 #Density of Nucleus
@@ -331,15 +359,31 @@ teps = 1*10**(-6) #Small number to avoid division by 0
 
 A = 17.5 #15 #Source intensity Controlling size of chemical signal
 Beta = 4 #2.5 #Magnitude of cell reponse to external stimuli
-alpha =  10 #10 #Internal Cell Membranes Relaxation Coefficient
+alpha =  50 #10 #Internal Cell Membranes Relaxation Coefficient
 Delta = 30 #30 #External Cell Membranes Relaxation Coefficient 
 delta_n = 300 #External Nucleus Relaxation Coefficient
 alpha_n = 100 #Internal Nucleus Relaxation Coefficient 
 
+#Chemoatt
+grad_cx = 0
+grad_cy = 0
+dcx = 0
+dcy =0
+
 #0.008
 #1/3
-epsilon = 0.0005 # Strength of Lennard Jones-interaction
-sigma = 1/2 # Range of Lennard-Jones Interaction
+epsilon = 0.0005 # Strength of Lennard Jones-interaction 0.0005 
+sigma = 2/3 # Range of Lennard-Jones Interaction 1/2
+
+#Boundary
+x_center = 0
+y_center = 0 
+R_Boundary = 7 #Radius of boundary
+k_boundary = 200 #Spring constant of boundary
+
+# Parameters for Brownian motion
+sigma_x = 0.2  # Intensity for x-direction
+sigma_y = 0.2  # Intensity for y-direction
 
 
 # Create a dictionary to store points of all cells
@@ -369,9 +413,10 @@ centroid_y = {cell_number: [] for cell_number in range(1, Cell_Amount + 1)}
 
 
 
+
 Amount_Concentration_Signal = 1
 Chemical_Signal_Points = numpy.zeros(Amount_Concentration_Signal)
-Concentration_Point_Coordinates = numpy.zeros((5, Amount_Concentration_Signal)) #x,y,time_on,time_off which concentration point, 1 = repel 0 = attract
+Concentration_Point_Coordinates = numpy.zeros((5, Amount_Concentration_Signal)) #x,y,time_on,time_off which concentration point, 1 = repel / 0 = attract
 Concentration_Point_flags = numpy.zeros(Amount_Concentration_Signal)
 
 #List where you want concentration points and on/off time of each
@@ -478,10 +523,12 @@ Concentration_Point_Coordinates[4][0] = 0
 # Concentration_Point_Coordinates[3][16] = 40
 # Concentration_Point_Coordinates[4][16] = 0
 
+#Generate Boundary
+circle_points = Create_Boundary_Mesh(500, lc, x_center, y_center, R_Boundary)
 
 # Generate mesh for each cell with a random offset
 for i in range(1, Cell_Amount + 1):
-    offset_x, offset_y = generate_random_offset(used_offsets, cell_spacing, Concentration_Point_Coordinates)
+    offset_x, offset_y = generate_random_offset(used_offsets, cell_spacing, Concentration_Point_Coordinates, R_Boundary)
     Center_Cell_Points[str(i)] = gmsh.model.geo.add_point(offset_x, offset_y, 0, lc)
     Outer_Cell_Points[str(i)] = Create_Cell_Mesh(Node_Amount, lc, offset_x, offset_y, Cell_Membrane_Coordinates, i, 1)
     Inner_Cell_Points[str(i)] = Create_Cell_Mesh(Node_Amount, lc, offset_x, offset_y, Cell_Nucleus_Coordinates, i, 0.25)
@@ -499,7 +546,7 @@ Original_Cell_Nucleus_Coordinates = copy.deepcopy(Cell_Nucleus_Coordinates)
 
 dt = 0.001 # 0.002
 t = 0
-T_Max = 40 #20
+T_Max = 20 #20
 PV_TIME = 0
 
 #run_gmesh()
@@ -546,103 +593,124 @@ while t < T_Max:
         
         centroid_x[cell_number].append(c_x)
         centroid_y[cell_number].append(c_y)
+        
+        F_Brown_x = sigma_x * numpy.random.normal()
+        F_Brown_y = sigma_y * numpy.random.normal()
+        
         #Iterate over each node of each cell
         for i in range(1, Node_Amount + 1):
             #Iterate for each concentration signal
             
-            # NOTE : Rethinking this, I should just make dcx,dcy a sum of all the grac_c
+            #Calculate boundary conditions
+            d = numpy.sqrt((Cell_Membrane_Coordinates[0][cell_number][i] - x_center)**2 + (Cell_Membrane_Coordinates[1][cell_number][i]-y_center)**2)
+            
+            if(d > R_Boundary):
+                F_xBound = -k_boundary * (d-R_Boundary) * (Cell_Membrane_Coordinates[0][cell_number][i] - x_center)/d
+                F_yBound = -k_boundary * (d-R_Boundary) * (Cell_Membrane_Coordinates[1][cell_number][i] - y_center)/d
+            else:
+                F_xBound = 0
+                F_yBound = 0
+               
+            # Calculate total chemoattractant force
             for j in range(0, Amount_Concentration_Signal):
                 if t >= Concentration_Point_Coordinates[2][j] and t <= Concentration_Point_Coordinates[3][j]:
-                    dcx, dcy = solve_grad_c(Cell_Membrane_Coordinates[0][cell_number][i], Concentration_Point_Coordinates[0][j], Cell_Membrane_Coordinates[1][cell_number][i], Concentration_Point_Coordinates[1][j], t - Concentration_Point_Coordinates[2][j], mu, teps, A, Concentration_Point_Coordinates[4][j])
-                else:
-                    dcx, dcy = 0, 0
+                    grad_cx, grad_cy = solve_grad_c(Cell_Membrane_Coordinates[0][cell_number][i], Concentration_Point_Coordinates[0][j], Cell_Membrane_Coordinates[1][cell_number][i], Concentration_Point_Coordinates[1][j], t - Concentration_Point_Coordinates[2][j], mu, teps, A, Concentration_Point_Coordinates[4][j])                    
+                    dcx = dcx + grad_cx
+                    dcy = dcy + grad_cy
+
                 
-                # Read the cell membrane node coordinates
-                m_x = Cell_Membrane_Coordinates[0][cell_number][i]
-                m_y = Cell_Membrane_Coordinates[1][cell_number][i]
-                n_x = Cell_Nucleus_Coordinates[0][cell_number][i]
-                n_y = Cell_Nucleus_Coordinates[1][cell_number][i]
-                
-                ##Read the original lcell membrane node coordinates
-                original_m_x = Original_Cell_Membrane_Coordinates[0][cell_number][i]
-                original_m_y = Original_Cell_Membrane_Coordinates[1][cell_number][i]
-                original_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i]
-                original_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i]
-                
+            # Read the cell membrane node coordinates
+            m_x = Cell_Membrane_Coordinates[0][cell_number][i]
+            m_y = Cell_Membrane_Coordinates[1][cell_number][i]
+            n_x = Cell_Nucleus_Coordinates[0][cell_number][i]
+            n_y = Cell_Nucleus_Coordinates[1][cell_number][i]
+            
+            ##Read the original lcell membrane node coordinates
+            original_m_x = Original_Cell_Membrane_Coordinates[0][cell_number][i]
+            original_m_y = Original_Cell_Membrane_Coordinates[1][cell_number][i]
+            original_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i]
+            original_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i]
+            
+            #If i == 1 then we remember previous node will be node N
+            if i == 1:
+                prev_x = Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
+                prev_y = Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
+                original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
+                original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
+            else:
+                prev_x = Cell_Membrane_Coordinates[0][cell_number][i-1]
+                prev_y = Cell_Membrane_Coordinates[1][cell_number][i-1]
+                original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][i-1]
+                original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][i-1]
+            #If i == node_amount then we remember next node will be node 1.
+            if i == Node_Amount:
+                next_x = Cell_Membrane_Coordinates[0][cell_number][1]
+                next_y = Cell_Membrane_Coordinates[1][cell_number][1]
+                original_next_x = Original_Cell_Membrane_Coordinates[0][cell_number][1]
+                original_next_y = Original_Cell_Membrane_Coordinates[1][cell_number][1]
+            else:
+                next_x = Cell_Membrane_Coordinates[0][cell_number][i+1]
+                next_y = Cell_Membrane_Coordinates[1][cell_number][i+1]
+                original_next_x = Original_Cell_Membrane_Coordinates[0][cell_number][i+1]
+                original_next_y = Original_Cell_Membrane_Coordinates[1][cell_number][i+1]
+
+            #Explicit time step on node summing all forces.
+            Cell_Membrane_Coordinates[0][cell_number][i] += (Beta * dcx * dt +
+                                                            alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt + #
+                                                            Delta * (original_m_x - original_next_x - (original_next_x - original_m_x) - (original_prev_x - original_m_x)  + (original_m_x - original_prev_x)) * dt +
+                                                            F_xBound * dt +
+                                                            F_Brown_x * numpy.sqrt(dt) ) 
+
+            Cell_Membrane_Coordinates[1][cell_number][i] += (Beta * dcy * dt +
+                                                            alpha * (n_y - m_y - (original_n_y - original_m_y)) * dt +
+                                                            Delta * (original_m_y - original_next_y - (original_next_y - original_m_y) - (original_prev_y - original_m_y)  + (original_m_y - original_prev_y)) * dt +
+                                                            F_yBound * dt +
+                                                            F_Brown_y * numpy.sqrt(dt) )
+            
+            # Update nucleus coordinates
                 #If i == 1 then we remember previous node will be node N
-                if i == 1:
-                    prev_x = Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
-                    prev_y = Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
-                    original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][Node_Amount]
-                    original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][Node_Amount]
-                else:
-                    prev_x = Cell_Membrane_Coordinates[0][cell_number][i-1]
-                    prev_y = Cell_Membrane_Coordinates[1][cell_number][i-1]
-                    original_prev_x = Original_Cell_Membrane_Coordinates[0][cell_number][i-1]
-                    original_prev_y = Original_Cell_Membrane_Coordinates[1][cell_number][i-1]
-                #If i == node_amount then we remember next node will be node 1.
-                if i == Node_Amount:
-                    next_x = Cell_Membrane_Coordinates[0][cell_number][1]
-                    next_y = Cell_Membrane_Coordinates[1][cell_number][1]
-                    original_next_x = Original_Cell_Membrane_Coordinates[0][cell_number][1]
-                    original_next_y = Original_Cell_Membrane_Coordinates[1][cell_number][1]
-                else:
-                    next_x = Cell_Membrane_Coordinates[0][cell_number][i+1]
-                    next_y = Cell_Membrane_Coordinates[1][cell_number][i+1]
-                    original_next_x = Original_Cell_Membrane_Coordinates[0][cell_number][i+1]
-                    original_next_y = Original_Cell_Membrane_Coordinates[1][cell_number][i+1]
+            if i == 1:
+                prev_n_x = Cell_Nucleus_Coordinates[0][cell_number][Node_Amount]
+                prev_n_y = Cell_Nucleus_Coordinates[1][cell_number][Node_Amount]
+                original_prev_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][Node_Amount]
+                original_prev_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][Node_Amount]
+            else:
+                prev_n_x = Cell_Nucleus_Coordinates[0][cell_number][i-1]
+                prev_n_y = Cell_Nucleus_Coordinates[1][cell_number][i-1]
+                original_prev_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i-1]
+                original_prev_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i-1]
 
-                #Explicit time step on node summing all forces.
-                Cell_Membrane_Coordinates[0][cell_number][i] += (Beta * dcx * dt +
-                                                                alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt + #
-                                                                Delta * (original_m_x - original_next_x - (original_next_x - original_m_x) - (original_prev_x - original_m_x)  + (original_m_x - original_prev_x)) * dt)
-
-                Cell_Membrane_Coordinates[1][cell_number][i] += (Beta * dcy * dt +
-                                                                alpha * (n_y - m_y - (original_n_y - original_m_y)) * dt +
-                                                                Delta * (original_m_y - original_next_y - (original_next_y - original_m_y) - (original_prev_y - original_m_y)  + (original_m_y - original_prev_y)) * dt)
+            #If i == node_amount then we remember next node will be node 1.
+            if i == Node_Amount:
+                next_n_x = Cell_Nucleus_Coordinates[0][cell_number][1]
+                next_n_y = Cell_Nucleus_Coordinates[1][cell_number][1]
+                original_next_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][1]
+                original_next_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][1]
+            else:
+                next_n_x = Cell_Nucleus_Coordinates[0][cell_number][i+1]
+                next_n_y = Cell_Nucleus_Coordinates[1][cell_number][i+1]
+                original_next_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i+1]
+                original_next_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i+1]
                 
-                # Update nucleus coordinates
-                 #If i == 1 then we remember previous node will be node N
-                if i == 1:
-                    prev_n_x = Cell_Nucleus_Coordinates[0][cell_number][Node_Amount]
-                    prev_n_y = Cell_Nucleus_Coordinates[1][cell_number][Node_Amount]
-                    original_prev_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][Node_Amount]
-                    original_prev_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][Node_Amount]
-                else:
-                    prev_n_x = Cell_Nucleus_Coordinates[0][cell_number][i-1]
-                    prev_n_y = Cell_Nucleus_Coordinates[1][cell_number][i-1]
-                    original_prev_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i-1]
-                    original_prev_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i-1]
+            
+            #Get original values of difference between nodes
+            original_hat_y_x = (original_n_x - original_next_n_x)
+            original_hat_y_y = (original_n_y - original_next_n_y)
 
-                #If i == node_amount then we remember next node will be node 1.
-                if i == Node_Amount:
-                    next_n_x = Cell_Nucleus_Coordinates[0][cell_number][1]
-                    next_n_y = Cell_Nucleus_Coordinates[1][cell_number][1]
-                    original_next_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][1]
-                    original_next_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][1]
-                else:
-                    next_n_x = Cell_Nucleus_Coordinates[0][cell_number][i+1]
-                    next_n_y = Cell_Nucleus_Coordinates[1][cell_number][i+1]
-                    original_next_n_x = Original_Cell_Nucleus_Coordinates[0][cell_number][i+1]
-                    original_next_n_y = Original_Cell_Nucleus_Coordinates[1][cell_number][i+1]
-                    
-                
-                #Get original values of difference between nodes
-                original_hat_y_x = (original_n_x - original_next_n_x)
-                original_hat_y_y = (original_n_y - original_next_n_y)
+            original_hat_x_x = (original_n_x - original_c_x)
+            original_hat_x_y = (original_n_y - original_c_y)
 
-                original_hat_x_x = (original_n_x - original_c_x)
-                original_hat_x_y = (original_n_y - original_c_y)
+            #Explicit time step
+            Cell_Nucleus_Coordinates[0][cell_number][i] += (alpha_n * (c_x - n_x + original_hat_x_x) * dt -
+                                                            alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt +
+                                                            delta_n * (original_hat_y_x - (original_next_n_x - original_n_x) - (original_prev_n_x - original_n_x) + (original_n_x - original_prev_n_x)) * dt)
 
-                #Explicit time step
-                Cell_Nucleus_Coordinates[0][cell_number][i] += (alpha_n * (c_x - n_x + original_hat_x_x) * dt -
-                                                                alpha * (n_x - m_x - (original_n_x - original_m_x)) * dt +
-                                                                delta_n * (original_hat_y_x - (original_next_n_x - original_n_x) - (original_prev_n_x - original_n_x) + (original_n_x - original_prev_n_x)) * dt)
-
-                Cell_Nucleus_Coordinates[1][cell_number][i] += (alpha_n * (c_y - n_y + original_hat_x_y) * dt -
-                                                                alpha * (n_y - m_y - (original_n_y - original_m_y)) * dt +
-                                                                delta_n * (original_hat_y_y - (original_next_n_y - original_n_y) - (original_prev_n_y - original_n_y) + (original_n_y - original_prev_n_y)) * dt)
-                
+            Cell_Nucleus_Coordinates[1][cell_number][i] += (alpha_n * (c_y - n_y + original_hat_x_y) * dt -
+                                                            alpha * (n_y - m_y - (original_n_y - original_m_y)) * dt +
+                                                            delta_n * (original_hat_y_y - (original_next_n_y - original_n_y) - (original_prev_n_y - original_n_y) + (original_n_y - original_prev_n_y)) * dt)
+            
+            dcx = 0
+            dcy = 0
         #Append for plotting meancurv
         #MeanCurv = calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates, cell_number, Node_Amount)
         #Mean_Curvature[cell_number].append(MeanCurv)
