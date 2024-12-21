@@ -349,8 +349,8 @@ def Create_Boundary_Mesh(N, lc, offset_x, offset_y, R_Boundary):
     return circle_points
 # Circle points:
 lc = 1e-2
-Node_Amount = 100 #Amout of nodes in simulation
-Cell_Amount = 5 #Amount of cells in simulation
+Node_Amount = 500 #Amout of nodes in simulation
+Cell_Amount = 10 #Amount of cells in simulation
 rho_1 = 1.2 #Density of cytoplasme
 rho_2 = 1.4 #Density of Nucleus
 mu = 2 #Diffusion constant of chemical signal
@@ -378,7 +378,7 @@ sigma = 2/3 # Range of Lennard-Jones Interaction 1/2
 #Boundary
 x_center = 0
 y_center = 0 
-R_Boundary = 7 #Radius of boundary
+R_Boundary = 8 #Radius of boundary
 k_boundary = 200 #Spring constant of boundary
 
 # Parameters for Brownian motion
@@ -420,7 +420,7 @@ Concentration_Point_Coordinates = numpy.zeros((5, Amount_Concentration_Signal)) 
 Concentration_Point_flags = numpy.zeros(Amount_Concentration_Signal)
 
 #List where you want concentration points and on/off time of each
-Concentration_Point_Coordinates[0][0] = 0
+Concentration_Point_Coordinates[0][0] = 6
 Concentration_Point_Coordinates[1][0] = 0
 Concentration_Point_Coordinates[2][0] = 0
 Concentration_Point_Coordinates[3][0] = 40
@@ -544,7 +544,7 @@ Original_Cell_Membrane_Coordinates = copy.deepcopy(Cell_Membrane_Coordinates)
 Original_Cell_Nucleus_Coordinates = copy.deepcopy(Cell_Nucleus_Coordinates)
 
 
-dt = 0.001 # 0.002
+dt = 0.002 # 0.002
 t = 0
 T_Max = 20 #20
 PV_TIME = 0
@@ -712,12 +712,12 @@ while t < T_Max:
             dcx = 0
             dcy = 0
         #Append for plotting meancurv
-        #MeanCurv = calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates, cell_number, Node_Amount)
-        #Mean_Curvature[cell_number].append(MeanCurv)
+        MeanCurv = calculate_mean_curvature(Cell_Membrane_Coordinates, Cell_Nucleus_Coordinates, cell_number, Node_Amount)
+        Mean_Curvature[cell_number].append(MeanCurv)
     time_values.append(t)
     t += dt
     
-    
+    """
 # Set the size and DPI of the figure for a two-column format
 plt.figure(figsize=(3.5, 2.5), dpi=300)
 
@@ -763,12 +763,16 @@ plt.show()
     
     
     
+    """
     
     
-    
+# Import necessary libraries
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.cm as cm
+
+# Define the boundary radius
+R_Boundary = 10  # Replace 10 with your desired radius
 
 # Set the size and DPI of the figure for a two-column format
 fig, ax = plt.subplots(figsize=(3.5, 2.5), dpi=300)  # Explicitly define the figure and axes
@@ -783,8 +787,18 @@ for cell_number in range(1, Cell_Amount + 1):
     
     # Plot the movement of the centroid using a color gradient for time
     for i in range(1, len(time_values)):
-        # Use a single line style ('-') for all cells
         ax.plot(x_values[i-1:i+1], y_values[i-1:i+1], '-', color=colors[i])
+
+# Add a circular boundary
+circle = plt.Circle((0, 0), R_Boundary, color='black', fill=False, linestyle='--', linewidth=0.8)
+ax.add_patch(circle)
+
+# Set axis limits to match the boundary
+ax.set_xlim(-R_Boundary, R_Boundary)
+ax.set_ylim(-R_Boundary, R_Boundary)
+
+# Maintain equal aspect ratio for proper circular shape
+ax.set_aspect('equal', adjustable='box')
 
 # Add labels with LaTeX formatting, title, and grid
 ax.set_xlabel('Centroid X Coordinate, $x$', fontsize=10)
@@ -798,20 +812,12 @@ ax.minorticks_on()
 ax.tick_params(axis='both', which='major', labelsize=8)
 
 # Add a color bar to represent time
-# Create ScalarMappable object to link the colormap to the colorbar
 norm = plt.Normalize(vmin=min(time_values), vmax=max(time_values))
 sm = plt.cm.ScalarMappable(cmap=cm.viridis, norm=norm)
-sm.set_array([])  # Setting an empty array, as ScalarMappable requires a set array
-
-# Add the colorbar to the current axes
+sm.set_array([])  # ScalarMappable requires a set array
 cbar = fig.colorbar(sm, ax=ax)  # Explicitly link the colorbar to the axes
 cbar.set_label('Time', fontsize=10)
 
 # Adjust layout and show the plot
 plt.tight_layout()
 plt.show()
-
-
-#gmsh.fltk.run()
-
-           # c = solve_c(Cell_Membrane_Coordinates[0][cell_number][i], xs, Cell_Membrane_Coordinates[1][cell_number][i], ys, t, mu, teps, A)
