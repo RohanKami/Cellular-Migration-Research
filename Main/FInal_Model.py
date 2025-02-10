@@ -349,8 +349,8 @@ def Create_Boundary_Mesh(N, lc, offset_x, offset_y, R_Boundary):
     return circle_points
 # Circle points:
 lc = 1e-2
-Node_Amount = 500 #Amout of nodes in simulation
-Cell_Amount = 10 #Amount of cells in simulation
+Node_Amount = 100 #Amout of nodes in simulation
+Cell_Amount = 50 #Amount of cells in simulation
 rho_1 = 1.2 #Density of cytoplasme
 rho_2 = 1.4 #Density of Nucleus
 mu = 2 #Diffusion constant of chemical signal
@@ -378,8 +378,8 @@ sigma = 2/3 # Range of Lennard-Jones Interaction 1/2
 #Boundary
 x_center = 0
 y_center = 0 
-R_Boundary = 8 #Radius of boundary
-k_boundary = 200 #Spring constant of boundary
+R_Boundary = 18 #Radius of boundary
+k_boundary = 120 #Spring constant of boundary
 
 # Parameters for Brownian motion
 sigma_x = 0.2  # Intensity for x-direction
@@ -420,30 +420,30 @@ Concentration_Point_Coordinates = numpy.zeros((5, Amount_Concentration_Signal)) 
 Concentration_Point_flags = numpy.zeros(Amount_Concentration_Signal)
 
 #List where you want concentration points and on/off time of each
-Concentration_Point_Coordinates[0][0] = 6
+Concentration_Point_Coordinates[0][0] = 0
 Concentration_Point_Coordinates[1][0] = 0
 Concentration_Point_Coordinates[2][0] = 0
 Concentration_Point_Coordinates[3][0] = 40
 Concentration_Point_Coordinates[4][0] = 0
 
 
-# Concentration_Point_Coordinates[0][1] = 35
-# Concentration_Point_Coordinates[1][1] = 13
-# Concentration_Point_Coordinates[2][1] = 0
+# Concentration_Point_Coordinates[0][1] = 0
+# Concentration_Point_Coordinates[1][1] = 0
+# Concentration_Point_Coordinates[2][1] = 20
 # Concentration_Point_Coordinates[3][1] = 40
 # Concentration_Point_Coordinates[4][1] = 0
 
-# Concentration_Point_Coordinates[0][2] = 35
-# Concentration_Point_Coordinates[1][2] = 11
-# Concentration_Point_Coordinates[2][2] = 0
+# Concentration_Point_Coordinates[0][2] = 5
+# Concentration_Point_Coordinates[1][2] = -5
+# Concentration_Point_Coordinates[2][2] = 20
 # Concentration_Point_Coordinates[3][2] = 40
 # Concentration_Point_Coordinates[4][2] = 0
 
-# Concentration_Point_Coordinates[0][3] = 35
-# Concentration_Point_Coordinates[1][3] = 9
-# Concentration_Point_Coordinates[2][3] = 0
+# Concentration_Point_Coordinates[0][3] = 5
+# Concentration_Point_Coordinates[1][3] = 5
+# Concentration_Point_Coordinates[2][3] = 20
 # Concentration_Point_Coordinates[3][3] = 40
-# Concentration_Point_Coordinates[4][3] = 0
+# Concentration_Point_Coordinates[4][3] = 0  
 
 # Concentration_Point_Coordinates[0][4] = 35
 # Concentration_Point_Coordinates[1][4] = 7
@@ -524,7 +524,7 @@ Concentration_Point_Coordinates[4][0] = 0
 # Concentration_Point_Coordinates[4][16] = 0
 
 #Generate Boundary
-circle_points = Create_Boundary_Mesh(500, lc, x_center, y_center, R_Boundary)
+circle_points = Create_Boundary_Mesh(1000, lc, x_center, y_center, R_Boundary)
 
 # Generate mesh for each cell with a random offset
 for i in range(1, Cell_Amount + 1):
@@ -546,7 +546,7 @@ Original_Cell_Nucleus_Coordinates = copy.deepcopy(Cell_Nucleus_Coordinates)
 
 dt = 0.002 # 0.002
 t = 0
-T_Max = 20 #20
+T_Max = 40 #20
 PV_TIME = 0
 
 #run_gmesh()
@@ -717,7 +717,7 @@ while t < T_Max:
     time_values.append(t)
     t += dt
     
-    """
+'''
 # Set the size and DPI of the figure for a two-column format
 plt.figure(figsize=(3.5, 2.5), dpi=300)
 
@@ -763,7 +763,7 @@ plt.show()
     
     
     
-    """
+'''
     
     
 # Import necessary libraries
@@ -787,10 +787,10 @@ for cell_number in range(1, Cell_Amount + 1):
     
     # Plot the movement of the centroid using a color gradient for time
     for i in range(1, len(time_values)):
-        ax.plot(x_values[i-1:i+1], y_values[i-1:i+1], '-', color=colors[i])
+        ax.plot(x_values[i-1:i+1], y_values[i-1:i+1], '-', color=colors[i], linewidth = 0.6)
 
 # Add a circular boundary
-circle = plt.Circle((0, 0), R_Boundary, color='black', fill=False, linestyle='--', linewidth=0.8)
+circle = plt.Circle((0, 0), R_Boundary, color='black', fill=False, linestyle='-', linewidth=0.8)
 ax.add_patch(circle)
 
 # Set axis limits to match the boundary
@@ -803,14 +803,27 @@ ax.set_aspect('equal', adjustable='box')
 # Add labels with LaTeX formatting, title, and grid
 ax.set_xlabel('Centroid X Coordinate, $x$', fontsize=10)
 ax.set_ylabel('Centroid Y Coordinate, $y$', fontsize=10)
-ax.set_title('Movement of Cell Centroids Over Time', fontsize=12)
-ax.grid(True)
 
+
+ax.set_title('Movement of Cell Centroids Over Time', fontsize=12)
+
+# Remove the tick labels on both axes
+ax.set_xticks([])
+ax.set_yticks([])
+
+# Remove x and y axes and their tick labels
+ax.axis('off')  # Removes the axes, tick marks, and labels
+
+
+# Remove the outer box (spines)
+for spine in ax.spines.values():
+    spine.set_visible(False)
+"""
 # Improve the style of the grid and axes
 ax.grid(which='both', linestyle='--', linewidth=0.5)
 ax.minorticks_on()
 ax.tick_params(axis='both', which='major', labelsize=8)
-
+"""
 # Add a color bar to represent time
 norm = plt.Normalize(vmin=min(time_values), vmax=max(time_values))
 sm = plt.cm.ScalarMappable(cmap=cm.viridis, norm=norm)
@@ -819,5 +832,11 @@ cbar = fig.colorbar(sm, ax=ax)  # Explicitly link the colorbar to the axes
 cbar.set_label('Time', fontsize=10)
 
 # Adjust layout and show the plot
+
+ax.grid(False)  # Disable gridlines
+ax.grid(visible=False, which='minor')  # Disable minor gridlines (if any)
+ax.grid(visible=False, which='major')  # Disable major gridlines (redundant but ensures no gridlines)
+ax.grid(visible=False, which='both')  # Ensure all gridlines (major and minor) are removed
+
 plt.tight_layout()
 plt.show()
